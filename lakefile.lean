@@ -8,9 +8,13 @@ package Stanley where
     ⟨`relaxedAutoImplicit, false⟩,
     ⟨`weak.linter.mathlibStandardSet, true⟩
   ]
+  moreLinkArgs := #[
+    "-L./.lake/packages/LeanCopilot/.lake/build/lib",
+    "-lctranslate2"
+  ]
 
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git"
+  "https://github.com/leanprover-community/mathlib4.git" @ "v4.25.0"
 
 require checkdecls from git
   "https://github.com/PatrickMassot/checkdecls.git"
