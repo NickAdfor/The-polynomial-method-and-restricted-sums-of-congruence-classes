@@ -1,4 +1,9 @@
-import Mathlib
+import Mathlib.Algebra.Field.ZMod
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Analysis.Normed.Ring.Lemmas
+import Mathlib.Combinatorics.Nullstellensatz
+import Mathlib.Data.Int.Star
+import Mathlib.Data.Nat.Prime.Factorial
 
 open Finsupp
 open scoped Finset
