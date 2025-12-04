@@ -1,7 +1,4 @@
-import Mathlib.Algebra.Field.ZMod
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.Algebra.Order.Star.Basic
-import Mathlib.Combinatorics.Nullstellensatz
+import Mathlib
 
 open Finsupp
 
