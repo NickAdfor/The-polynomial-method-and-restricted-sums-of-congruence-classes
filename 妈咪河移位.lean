@@ -1,3 +1,4 @@
+-- One cannot use #min_imports. I don't know why. Something happens in `bound`.
 import Mathlib
 
 open scoped Finset
@@ -23,6 +24,7 @@ noncomputable def elimination_polynomials (A : Fin (k + 1) → Finset (ZMod p)) 
     Fin (k + 1) → MvPolynomial (Fin (k + 1)) (ZMod p) :=
   fun i => ∏ a ∈ A i, (MvPolynomial.X i - C a)
 
+/-- Reduction of polynomial degrees -/
 noncomputable def reduce_polynomial_degrees (P : MvPolynomial (Fin (k + 1)) (ZMod p))
     (g : Fin (k + 1) → MvPolynomial (Fin (k + 1)) (ZMod p))
     (c : Fin (k + 1) → ℕ) : MvPolynomial (Fin (k + 1)) (ZMod p) :=
@@ -37,21 +39,6 @@ noncomputable def reduce_polynomial_degrees (P : MvPolynomial (Fin (k + 1)) (ZMo
       coeff • (MvPolynomial.monomial new_m 1) * (MvPolynomial.X i ^ (c i + 1) - g i)
     else
       coeff • MvPolynomial.monomial m 1
-
-/- (Unused) -/
-lemma reduce_polynomial_degrees_eq (P : MvPolynomial (Fin (k + 1)) (ZMod p))
-  (g : Fin (k + 1) → MvPolynomial (Fin (k + 1)) (ZMod p))
-  (c : Fin (k + 1) → ℕ) :
-  reduce_polynomial_degrees P g c =
-    P.support.sum (fun m =>
-      let coeff := P.coeff m
-      let needs_replacement := Finset.filter (fun i => m i > c i) Finset.univ
-      if h : needs_replacement.Nonempty then
-        let i := needs_replacement.min' h
-        let new_m := Finsupp.update m i (m i - (c i + 1))
-        coeff • MvPolynomial.monomial new_m 1 * (MvPolynomial.X i ^ (c i + 1) - g i)
-      else
-        coeff • MvPolynomial.monomial m 1) := rfl
 
 /-- The sum of variables polynomial -/
 noncomputable def sumX_polynomial : MvPolynomial (Fin (k + 1)) (ZMod p) :=
@@ -96,8 +83,7 @@ lemma construction_polynomial_vanishes
       simp_all only [Finset.mem_image, Finset.mem_filter, Fintype.mem_piFinset]
       apply Exists.intro
       · apply And.intro
-        on_goal 2 => { rfl
-        }
+        on_goal 2 => {rfl}
         · simp_all only [implies_true, not_false_eq_true, and_self]
     have h_sum_in_E : (∑ i, x i) ∈ E := hE_sub h_sum_in_S
     have h_prod_zero : eval x ((E.map (fun e => sumX_polynomial - C e)).prod) = 0 := by
@@ -127,9 +113,7 @@ lemma product_polynomial_ne_zero (k : ℕ) (E : Multiset (ZMod p)) :
       replace ha := congr_arg (MvPolynomial.eval (fun i => if i = 0 then a + 1 else 0)) ha
       norm_num [sumX_polynomial] at ha
 
-/-
-Induction steps from J.J. Zhang
--/
+/-- Lemmas about total degree of sumX -/
 lemma totalDegree_sumX_sub_C_first {p k : ℕ} [Fact (Nat.Prime p)] (a : ZMod p) :
     (sumX_polynomial - C a : MvPolynomial (Fin (k + 1)) (ZMod p)).totalDegree = 1 := by
       refine' le_antisymm _ _
@@ -139,16 +123,21 @@ lemma totalDegree_sumX_sub_C_first {p k : ℕ} [Fact (Nat.Prime p)] (a : ZMod p)
           -- The total degree of a sum of polynomials is less than or equal to the maximum of their total degrees.
           have h_sum_deg : ∀ (s : Finset (Fin (k + 1))), (∑ i ∈ s, MvPolynomial.X i : MvPolynomial (Fin (k + 1)) (ZMod p)).totalDegree ≤ Finset.sup s (fun i => (MvPolynomial.X i : MvPolynomial (Fin (k + 1)) (ZMod p)).totalDegree) := by
             exact fun s => totalDegree_finset_sum s fun i => X i
-          aesop
+          intro s
+          simp_all only [totalDegree_X]
           exact le_trans (h_sum_deg s) (Finset.sup_le fun i hi => le_rfl)
-        aesop
+        simp_all only [totalDegree_C, zero_le, sup_of_le_left, ge_iff_le]
+        apply h_total_degree_sum
       · refine' le_trans _ (Finset.le_sup <| show Finsupp.single 0 1 ∈ (∑ i : Fin (k + 1), MvPolynomial.X i - MvPolynomial.C a |> MvPolynomial.support) from _) <;> norm_num
-        rw [MvPolynomial.coeff_sum] ; aesop
-        simpa using congr_arg (fun f => f 0) h.symm
+        rw [MvPolynomial.coeff_sum] ;
+        simp_all only [coeff_single_X, true_and, Finset.sum_ite_eq', Finset.mem_univ, ↓reduceIte]
+        apply Aesop.BuiltinRules.not_intro
+        intro a_1
+        split at a_1
+        next h => simpa using congr_arg (fun f => f 0) h.symm
+        next h => simp_all only [sub_zero, one_ne_zero]
 
-/-
-Induction steps from J.J. Zhang
--/
+/-- Another version of the previous lemma -/
 lemma totalDegree_sumX_sub_C_second (e : ZMod p) :
     totalDegree (∑ i : Fin (k + 1), X i - C e) = 1 := by
   have : (∑ i : Fin (k + 1), X i - C e) = (sumX_polynomial : MvPolynomial (Fin (k + 1)) (ZMod p)) - C e := by
@@ -156,9 +145,7 @@ lemma totalDegree_sumX_sub_C_second (e : ZMod p) :
   rw [this]
   exact totalDegree_sumX_sub_C_first e
 
-/-
-Induction steps from J.J. Zhang
--/
+/-- The total degree of the product polynomial ∏_{e∈E} (∑X_i - C e) is equal to |E| （Induction steps from J.J. Zhang) -/
 lemma totalDegree_prod_sumX_sub_C_eq_card (E : Multiset (ZMod p)) :
     ((Multiset.map (fun e ↦ ∑ i : Fin (k + 1), X i - C e) E).prod).totalDegree = E.card := by
   induction E using Multiset.induction_on with
@@ -189,8 +176,9 @@ lemma totalDegree_prod_sumX_sub_C_eq_card (E : Multiset (ZMod p)) :
       · rw [eq_comm, Finsupp.single_eq_zero]
         norm_num
 
+-- How can one lower the maxHeartbeats?
 set_option maxHeartbeats 2000000 in
-/- I may say that this part can be shortened by the induction from J.J. Zhang-/
+/-- The total degree of the construction polynomial is equal to the sum of c_i -/
 lemma construction_polynomial_totalDegree
     (h : MvPolynomial (Fin (k + 1)) (ZMod p))
     (h_ne_zero : h ≠ 0)
@@ -222,12 +210,21 @@ lemma construction_polynomial_totalDegree
             exact sub_eq_add_neg (coeff d (∑ i, X i)) (if 0 = d then e else 0)
           have coeff_C_eq : coeff d (C e) = if d = 0 then e else 0 := by
             simp only [coeff_C]
-            aesop
+            simp_all only [ne_eq, coeff_add, coeff_neg, coeff_C]
+            split
+            next h_1 =>
+              subst h_1
+              simp_all only [↓reduceIte]
+            next h_1 =>
+              simp_all only [↓reduceIte, neg_zero, add_zero, right_eq_ite_iff]
+              intro a
+              subst a
+              simp_all only [not_true_eq_false]
           rw [coeff_C_eq] at coeff_sub_eq
           -- Step 2: d is in the support since its coefficient != 0
           have mem_support : d ∈ (∑ i, X i - C e).support := by
             rw [MvPolynomial.mem_support_iff, coeff_sub_eq]
-            aesop
+            simp_all only [ne_eq, coeff_add, coeff_neg, coeff_C, not_false_eq_true]
           have support_subset :
           (∑ i, X i - C e).support ⊆
               (Finset.biUnion Finset.univ fun i : Fin (k + 1) => {Finsupp.single i 1})
@@ -266,10 +263,19 @@ lemma construction_polynomial_totalDegree
                     simp [MvPolynomial.coeff_X']
                     exact fun a ↦ h i (id (Eq.symm a))
                   exact fun i => this i
-              aesop
+              simp_all only [ne_eq, coeff_add, coeff_neg, coeff_C, MvPolynomial.mem_support_iff]
             have coeff_C_eq : coeff x (C e) = if x = 0 then e else 0 := by
               simp only [coeff_C]
-              aesop
+              simp_all only [ne_eq, coeff_add, coeff_neg, coeff_C, MvPolynomial.mem_support_iff, not_false_eq_true]
+              split
+              next h_1 =>
+                subst h_1
+                simp_all only [↓reduceIte]
+              next h_1 =>
+                simp_all only [↓reduceIte, sub_zero, neg_zero, add_zero, right_eq_ite_iff]
+                intro a
+                subst a
+                simp_all only [not_true_eq_false]
             by_cases h : ∃ i, x = Finsupp.single i 1
             · rcases h with ⟨i, hi⟩
               apply Finset.mem_union_left
@@ -288,7 +294,8 @@ lemma construction_polynomial_totalDegree
                   have h_eq_symm : x = Finsupp.single i 1 := h_eq.symm
                   exact no_single ⟨i, h_eq_symm⟩
                 · intro a
-                  aesop
+                  simp_all only [ne_eq, coeff_add, coeff_neg, coeff_C, MvPolynomial.mem_support_iff, ↓reduceIte,
+                    not_false_eq_true, not_exists, Finset.mem_univ]
               rw [h1] at hx
               rw [coeff_C_eq] at hx
               by_cases h2 : x = 0
@@ -298,7 +305,17 @@ lemma construction_polynomial_totalDegree
           d ∈ (Finset.biUnion Finset.univ fun i : Fin (k + 1) => {Finsupp.single i 1}) ∪ {0} :=
             support_subset mem_support
           simp at this
-          aesop
+          simp_all only [ne_eq, coeff_add, coeff_neg, coeff_C, MvPolynomial.mem_support_iff, Finset.union_singleton,
+            ge_iff_le, not_false_eq_true]
+          cases this with
+          | inl h_1 =>
+            subst h_1
+            simp_all only [↓reduceIte, sum_zero_index, zero_le]
+          | inr h_2 =>
+            obtain ⟨w, h_1⟩ := h_2
+            subst h_1
+            simp_all only [single_eq_zero, one_ne_zero, ↓reduceIte, ite_eq_right_iff, neg_zero, add_zero,
+              sum_single_index, le_refl]
         exact this
       simp
       let b : (Fin (k + 1)) →₀ ℕ := Finsupp.single (0 : Fin (k + 1)) 1
@@ -310,7 +327,7 @@ lemma construction_polynomial_totalDegree
         rw [← this]
         have b_ne_zero : b ≠ 0 := by
           intro H
-          aesop
+          simp_all only [ne_eq, single_eq_zero, one_ne_zero, b]
         have : ¬(0 = b) := Ne.symm b_ne_zero
         simp [this]
         change coeff b (∑ i, X i) ≠ 0
@@ -329,7 +346,8 @@ lemma construction_polynomial_totalDegree
     have h_prod_deg : ((Multiset.map (fun e ↦ ∑ i : Fin (k + 1), X i - C e) E).prod).totalDegree = m := by
       have h1 : ∀ e : ZMod p, (∑ i : Fin (k + 1), X i - C e).totalDegree = 1 := by
         intro e
-        aesop
+        simp_all only [ne_eq]
+        apply degree_of_each
       -- Apply the lemma that the total degree of a product is the sum of the total degrees.
       have h_total_degree : ∀ (s : Multiset (MvPolynomial (Fin (k + 1)) (ZMod p))), (∀ p ∈ s, p.totalDegree = 1) → s.prod.totalDegree = s.card := by
         bound
@@ -339,7 +357,7 @@ lemma construction_polynomial_totalDegree
           exact fun f g a a_3 => totalDegree_mul_of_isDomain a a_3
         by_cases h : a_1 = 0 <;> by_cases h' : s.prod = 0 <;> simp_all +decide [add_comm]
         rw [eq_comm] at a_2
-        aesop
+        simp_all only [Multiset.card_eq_zero, Multiset.notMem_zero, IsEmpty.forall_iff, implies_true]
       rw [h_total_degree] <;> aesop
     exact h_prod_deg
   have h_h_deg : h.totalDegree = (∑ i, c i) - m := by
@@ -358,12 +376,10 @@ lemma construction_polynomial_totalDegree
     Nat.add_comm (∑ i, c i - (Multiset.map (fun e => sumX_polynomial - C e) E).prod.totalDegree)
       (product_polynomial k E).totalDegree
 
-/-
-The coefficient of a term of maximal degree in the product $\prod (S - e)$ is the same as in $S^{|E|}$.
--/
 open MvPolynomial Finsupp
 open scoped BigOperators
 
+/-- The coefficient of a term of maximal degree in the product $\prod (S - e)$ is the same as in $S^{|E|}$. -/
 lemma coeff_prod_sumX_minus_C_eq_coeff_sumX_pow_of_degree_eq
     {p : ℕ} [Fact (Nat.Prime p)] {k : ℕ}
     (E : Multiset (ZMod p)) (x : (Fin (k+1)) →₀ ℕ) (hx : ∑ i, x i = Multiset.card E) :
@@ -374,13 +390,18 @@ lemma coeff_prod_sumX_minus_C_eq_coeff_sumX_pow_of_degree_eq
   rw [pow_succ']
   simp +decide [sub_mul, mul_assoc, MvPolynomial.coeff_mul]
   rw [← Finset.sum_sub_distrib, Finset.sum_congr rfl] ; aesop
-  · rw [MvPolynomial.coeff_sum] ; aesop
+  · rw [MvPolynomial.coeff_sum]
+    simp_all only [coeff_zero_X, Finset.sum_const_zero, zero_mul, zero_sub, neg_eq_zero, mul_eq_zero]
     refine' Or.inr (_)
     rw [MvPolynomial.coeff_eq_zero_of_totalDegree_lt]
     refine' lt_of_le_of_lt (MvPolynomial.totalDegree_multiset_prod _) _
     refine' lt_of_le_of_lt (Multiset.sum_le_card_nsmul _ _ _) _
     exact 1
-    · aesop
+    · intro x a_1
+      simp_all only [Multiset.map_map, Function.comp_apply, Multiset.mem_map]
+      obtain ⟨w, h⟩ := a_1
+      obtain ⟨left, right⟩ := h
+      subst right
       norm_num [MvPolynomial.totalDegree]
       intro b hb; contrapose! hb; simp_all +decide [MvPolynomial.coeff_sum, MvPolynomial.coeff_X']
       rw [Finset.card_eq_zero.mpr] <;> aesop
@@ -389,15 +410,23 @@ lemma coeff_prod_sumX_minus_C_eq_coeff_sumX_pow_of_degree_eq
     by_cases h_snd : ∑ i, snd i = E.card
     · exact Or.inl <| ih snd h_snd
     · right
-      rw [MvPolynomial.coeff_sum, Finset.sum_eq_zero] ; aesop
+      rw [MvPolynomial.coeff_sum, Finset.sum_eq_zero]
+      intro x a_1
+      simp_all only [Finset.mem_univ]
       -- Since $fst \neq Finsupp.single x 1$, the coefficient of $fst$ in $X x$ is zero.
       have h_coeff_zero : fst ≠ Finsupp.single x 1 := by
         intro H; simp_all +decide [Finsupp.single_apply]
         exact h_snd (by linarith)
-      rw [MvPolynomial.coeff_X'] ; aesop
+      rw [MvPolynomial.coeff_X']
+      simp_all only [ne_eq, ite_eq_right_iff, one_ne_zero, imp_false]
+      apply Aesop.BuiltinRules.not_intro
+      intro a_1
+      subst a_1
+      simp_all only [univ_sum_single_apply, not_true_eq_false]
 
+-- Also, lower the maxHeartbeats!!!
 set_option maxHeartbeats 2000000 in
-/- The condition of the three h seems hard to use-/
+/-- The coefficient of a specific term in the construction polynomial is non-zero under certain conditions. -/
 lemma construction_polynomial_coeff_target_generalized
     (h : MvPolynomial (Fin (k + 1)) (ZMod p))
     (c : Fin (k + 1) → ℕ) (m : ℕ) (hm : m + h.totalDegree = ∑ i, c i)
@@ -440,58 +469,21 @@ lemma construction_polynomial_coeff_target_generalized
           intro b hb_nonzero
           have hb_X : ∃ i, b = Finsupp.single i 1 := by
             simp_all +decide [MvPolynomial.coeff_sum, MvPolynomial.coeff_X']
-            obtain ⟨i, hi⟩ := Finset.nonempty_of_ne_empty (by aesop_cat : (Finset.filter (fun x => (Finsupp.single x 1) = b) Finset.univ) ≠ ∅) ; use i; aesop
-          aesop
-        · rw [Finset.sum_subset (show snd.support ⊆ Finset.univ from Finset.subset_univ _)] ; aesop
+            obtain ⟨i, hi⟩ := Finset.nonempty_of_ne_empty (by aesop_cat : (Finset.filter (fun x => (Finsupp.single x 1) = b) Finset.univ) ≠ ∅) ; use i; simp_all only [Finset.mem_filter,
+              Finset.mem_univ, true_and]
+          simp_all only [ge_iff_le]
+          obtain ⟨w, h_1⟩ := hb_X
+          subst h_1
+          simp_all only [sum_single_index, le_refl]
+        · rw [Finset.sum_subset (show snd.support ⊆ Finset.univ from Finset.subset_univ _)] ;
+          intro x a_1 a_2
+          simp_all only [Finset.mem_univ, Finsupp.mem_support_iff, ne_eq, Decidable.not_not]
       linarith [show h.totalDegree ≥ ∑ i, fst i from Finset.le_sup (f := fun s => s.sum fun x e => e) (Finsupp.mem_support_iff.mpr left) |> le_trans (by simp +decide [Finsupp.sum_fintype])]
-
-/-
-(Not used)
-sumX_polynomial is homogeneous of degree 1.
--/
-lemma sumX_is_homogeneous_one {p k : ℕ} [Fact (Nat.Prime p)] :
-    IsHomogeneous (sumX_polynomial : MvPolynomial (Fin (k + 1)) (ZMod p)) 1 := by
-      -- Each X_i is a monomial of degree 1, so their sum is also homogeneous of degree 1.
-      have h_homogeneous : ∀ i : Fin (k + 1), (MvPolynomial.X i : MvPolynomial (Fin (k + 1)) (ZMod p)).IsHomogeneous 1 := by
-        exact fun i => isHomogeneous_X (ZMod p) i
-      -- Apply the lemma that the sum of homogeneous polynomials is homogeneous.
-      have h_sum_homogeneous : ∀ (s : Finset (Fin (k + 1))), (∀ i ∈ s, (MvPolynomial.X i : MvPolynomial (Fin (k + 1)) (ZMod p)).IsHomogeneous 1) → (Finset.sum s (fun i => MvPolynomial.X i) : MvPolynomial (Fin (k + 1)) (ZMod p)).IsHomogeneous 1 := by
-        exact fun s a => IsHomogeneous.sum s X 1 a
-      exact h_sum_homogeneous _ fun i _ => h_homogeneous i
-
-/-
-(Not used)
-Properties of sumX - C a regarding its degree and coefficients in X_0.
--/
-lemma sumX_sub_C_properties {p k : ℕ} [Fact (Nat.Prime p)] (a : ZMod p) :
-    let Q := (sumX_polynomial - C a : MvPolynomial (Fin (k + 1)) (ZMod p))
-    Q.degreeOf 0 = 1 ∧
-    Q.coeff (Finsupp.single 0 1) = 1 ∧
-    (∀ m ∈ Q.support, m 0 ≤ 1) ∧
-    (∀ m ∈ Q.support, m 0 = 1 → m = Finsupp.single 0 1) := by
-      unfold sumX_polynomial
-      norm_num [MvPolynomial.degreeOf_eq_sup, MvPolynomial.coeff_sum]
-      refine' ⟨_, _, _, _⟩
-      · refine' le_antisymm _ _
-        · simp +zetaDelta at *
-          intro b hb; contrapose! hb; simp_all +decide [MvPolynomial.coeff_sum, MvPolynomial.coeff_X']
-          rw [Finset.card_eq_zero.mpr] <;> aesop
-          rw [Finsupp.single_apply] at hb ; aesop
-        · refine' le_trans _ (Finset.le_sup <| show Finsupp.single 0 1 ∈ _ from _) <;> norm_num
-          rw [MvPolynomial.coeff_sum] ; aesop
-          simpa using congr_arg (fun f => f 0) h.symm
-      · exact fun h => absurd h (ne_of_apply_ne (fun f => f 0) (by norm_num))
-      · intro m hm; contrapose! hm; simp_all +decide [MvPolynomial.coeff_X']
-        rw [Finset.card_eq_zero.mpr] <;> aesop
-        rw [Finsupp.single_apply] at hm ; aesop
-      · intro m hm₁ hm₂; rw [Finset.sum_eq_single 0] at hm₁ <;> aesop
-        · rw [MvPolynomial.coeff_X'] at hm₁ ; aesop
-        · rw [MvPolynomial.coeff_X'] ; aesop
-
 
 noncomputable section AristotleLemmas
 
 set_option maxHeartbeats 2000000 in
+/-- The elimination polynomial $g_i$ for a given index $i$ and set $A_i$ -/
 lemma elimination_polynomial_properties (A : Fin (k + 1) → Finset (ZMod p)) (i : Fin (k + 1))
     (h_card : (A i).card > 0) :
     let g := elimination_polynomials A i
@@ -513,22 +505,42 @@ lemma elimination_polynomial_properties (A : Fin (k + 1) → Finset (ZMod p)) (i
             -- The total degree of the product of linear terms is the sum of the degrees of the individual terms.
             have h_total_degree : (∏ a ∈ s, (MvPolynomial.X i - MvPolynomial.C a)).totalDegree ≤ s.card := by
               have h_total_degree : ∀ a ∈ s, (MvPolynomial.X i - MvPolynomial.C a).totalDegree ≤ 1 := by
-                intro a ha; rw [MvPolynomial.totalDegree] ; aesop
-                rw [MvPolynomial.coeff_X'] at a_4 ; aesop
+                intro a ha; rw [MvPolynomial.totalDegree]
+                simp_all only [Finset.sup_le_iff, MvPolynomial.mem_support_iff, coeff_sub, coeff_C, ne_eq]
+                intro b a_4
+                split at a_4
+                next h =>
+                  subst h
+                  simp_all only [coeff_zero_X, zero_sub, neg_eq_zero, sum_zero_index, zero_le]
+                next h =>
+                  simp_all only [sub_zero]
+                  rw [MvPolynomial.coeff_X'] at a_4
+                  simp_all only [ite_eq_right_iff, one_ne_zero, imp_false, Decidable.not_not]
+                  subst a_4
+                  simp_all only [sum_single_index, le_refl]
               have h_total_degree : ∀ {S : Finset (ZMod p)}, (∀ a ∈ S, (MvPolynomial.X i - MvPolynomial.C a).totalDegree ≤ 1) → (∏ a ∈ S, (MvPolynomial.X i - MvPolynomial.C a)).totalDegree ≤ S.card := by
                 intros S hS; induction S using Finset.induction <;> aesop
                 exact le_trans (MvPolynomial.totalDegree_mul _ _) (by linarith)
               exact h_total_degree ‹_›
             refine' lt_of_le_of_lt h_total_degree _
             rw [Finset.sum_eq_single i] <;> aesop
-          · aesop
-            rw [MvPolynomial.coeff_X'] ; aesop
-            contrapose! a_4; aesop
-            ext j; replace a_3 := congr_arg (fun f => f j) a_3; aesop
-            rw [add_comm] at a_3 ; aesop
+          · intro b a_3 a_4
+            simp_all only [Finset.mem_antidiagonal, ne_eq, mul_eq_zero]
+            obtain ⟨fst, snd⟩ := b
+            simp_all only [Prod.mk.injEq, not_and]
+            rw [MvPolynomial.coeff_X']
+            simp_all only [ite_eq_right_iff, one_ne_zero, imp_false]
+            contrapose! a_4
+            simp_all only [ne_eq, true_and]
+            obtain ⟨left, right⟩ := a_4
+            subst left
+            ext j; replace a_3 := congr_arg (fun f => f j) a_3
+            simp_all only [Finsupp.coe_add, Pi.add_apply]
+            rw [add_comm] at a_3
+            simp_all only [Nat.add_right_cancel_iff]
           · simp +decide [add_comm, Finsupp.single_apply]
         refine' le_antisymm _ _
-        · simp_all +decide [Finset.prod_eq_zero_iff, sub_eq_zero]
+        · simp_all +decide
           intro b hb
           contrapose! hb
           rw [MvPolynomial.coeff_eq_zero_of_totalDegree_lt]
@@ -538,7 +550,11 @@ lemma elimination_polynomial_properties (A : Fin (k + 1) → Finset (ZMod p)) (i
             refine' le_trans (MvPolynomial.totalDegree_mul _ _) _
             refine' le_trans (add_le_add (MvPolynomial.totalDegree_sub _ _) a_2) _
             norm_num [add_comm, MvPolynomial.totalDegree_X]
-          · exact lt_of_lt_of_le hb (Finset.single_le_sum (fun a _ => Nat.zero_le (b a)) (by aesop))
+          · exact lt_of_lt_of_le hb (Finset.single_le_sum (fun a _ => Nat.zero_le (b a)) (by
+          simp_all only [Finsupp.mem_support_iff, ne_eq]
+          apply Aesop.BuiltinRules.not_intro
+          intro a
+          simp_all only [not_lt_zero']))
         · refine' le_trans _ (Finset.le_sup <| show Finsupp.single i (# (A i)) ∈ _ from _) <;> aesop
       refine' ⟨h_deg, _, _, _⟩
       · -- The leading coefficient of $g_i$ is 1 because it is a product of linear terms with leading coefficient 1.
@@ -554,24 +570,46 @@ lemma elimination_polynomial_properties (A : Fin (k + 1) → Finset (ZMod p)) (i
               · rw [eq_comm] at hxy ; aesop
                 · simpa using congr_arg (fun f => f i) h.symm
                 · simpa using congr_arg (fun f => f i) h.symm
-                · rw [Finsupp.ext_iff] at hxy ; aesop
+                · rw [Finsupp.ext_iff] at hxy ;
+                  simp_all only [Finsupp.coe_add, Pi.add_apply]
                   contrapose! h_1; ext j; specialize hxy j; by_cases hj : j = i <;> aesop
                   linarith
-              · rw [MvPolynomial.coeff_X'] ; aesop
-                contrapose! hx; aesop
-                -- The degree of the product of (X_i - C a) over s is #s, so any term with a higher degree than #s must have a coefficient of zero.
-                have h_deg : (∏ a ∈ s, (MvPolynomial.X i - MvPolynomial.C a)).totalDegree ≤ #s := by
-                  have h_total_degree : ∀ (s : Finset (ZMod p)), (∏ a ∈ s, (MvPolynomial.X i - MvPolynomial.C a)).totalDegree ≤ s.card := by
-                    intro s; induction s using Finset.induction <;> aesop
-                    refine' le_trans (MvPolynomial.totalDegree_mul _ _) _
-                    refine' le_trans (add_le_add (MvPolynomial.totalDegree_sub _ _) a_3) _ ; norm_num [add_comm]
-                  exact h_total_degree s
-                rw [MvPolynomial.coeff_eq_zero_of_totalDegree_lt] at right <;> aesop
-                refine' lt_of_le_of_lt h_deg _
-                rw [Finset.sum_eq_single i] <;> aesop
-            rw [Finset.sum_congr rfl fun x hx => h_nonzero_term _ _ <| by simpa using hx] ; aesop
-            rw [Finset.card_eq_one.mpr] ; aesop
-            use ((fun₀ | i => 1), (fun₀ | i => #s)) ; ext ; aesop
+              · rw [MvPolynomial.coeff_X'] ;
+                simp_all only [false_and, ↓reduceIte, mul_eq_zero]
+                split
+                next h =>
+                  subst h
+                  simp_all only [not_true_eq_false]
+                next h =>
+                  simp_all only [zero_sub, neg_eq_zero, ite_eq_right_iff]
+                  contrapose! hx
+                  simp_all only [ne_eq]
+                  obtain ⟨left, right⟩ := hx
+                  obtain ⟨left, right_1⟩ := left
+                  subst left
+                  simp_all only [zero_add, single_eq_zero, one_ne_zero, not_false_eq_true]
+                  subst hxy
+                  -- The degree of the product of (X_i - C a) over s is #s, so any term with a higher degree than #s must have a coefficient of zero.
+                  have h_deg : (∏ a ∈ s, (MvPolynomial.X i - MvPolynomial.C a)).totalDegree ≤ #s := by
+                    have h_total_degree : ∀ (s : Finset (ZMod p)), (∏ a ∈ s, (MvPolynomial.X i - MvPolynomial.C a)).totalDegree ≤ s.card := by
+                      intro s; induction s using Finset.induction <;> aesop
+                      refine' le_trans (MvPolynomial.totalDegree_mul _ _) _
+                      refine' le_trans (add_le_add (MvPolynomial.totalDegree_sub _ _) a_3) _ ; norm_num [add_comm]
+                    exact h_total_degree s
+                  rw [MvPolynomial.coeff_eq_zero_of_totalDegree_lt] at right <;> aesop
+                  refine' lt_of_le_of_lt h_deg _
+                  rw [Finset.sum_eq_single i] <;> aesop
+            rw [Finset.sum_congr rfl fun x hx => h_nonzero_term _ _ <| by simpa using hx]
+            simp_all only [Finset.sum_boole]
+            rw [Finset.card_eq_one.mpr]
+            simp_all only [Nat.cast_one]
+            use ((fun₀ | i => 1), (fun₀ | i => #s)) ; ext
+            rename_i a_1
+            simp_all only [Finset.mem_filter, Finset.mem_antidiagonal, Finset.mem_singleton]
+            obtain ⟨fst, snd⟩ := a_1
+            simp_all only [Prod.mk.injEq, and_iff_right_iff_imp, and_imp]
+            intro a_1 a_2
+            subst a_1 a_2
             exact add_comm _ _
         exact h_leading_coeff _
       · unfold elimination_polynomials
@@ -593,49 +631,99 @@ lemma elimination_polynomial_properties (A : Fin (k + 1) → Finset (ZMod p)) (i
                     · rw [eq_comm] at hxy ; aesop
                       · simpa using congr_arg (fun f => f i) h.symm
                       · simpa using congr_arg (fun f => f i) h.symm
-                      · rw [Finsupp.ext_iff] at hxy ; aesop
+                      · rw [Finsupp.ext_iff] at hxy
+                        simp_all only [Finsupp.coe_add, Pi.add_apply]
                         contrapose! h_1; ext j; specialize hxy j; by_cases hj : j = i <;> aesop
                         linarith
-                    · rw [MvPolynomial.coeff_X'] ; aesop
-                      contrapose! hx; aesop
-                      -- The degree of the product of (X_i - C a) over s is #s, so any term with a higher degree than #s must have a coefficient of zero.
-                      have h_deg : (∏ a ∈ s, (MvPolynomial.X i - MvPolynomial.C a)).totalDegree ≤ #s := by
-                        have h_total_degree : ∀ (s : Finset (ZMod p)), (∏ a ∈ s, (MvPolynomial.X i - MvPolynomial.C a)).totalDegree ≤ s.card := by
-                          intro s; induction s using Finset.induction <;> aesop
-                          refine' le_trans (MvPolynomial.totalDegree_mul _ _) _
-                          refine' le_trans (add_le_add (MvPolynomial.totalDegree_sub _ _) a_3) _ ; norm_num [add_comm]
-                        exact h_total_degree s
-                      rw [MvPolynomial.coeff_eq_zero_of_totalDegree_lt] at right <;> aesop
-                      refine' lt_of_le_of_lt h_deg _
-                      rw [Finset.sum_eq_single i] <;> aesop
-                  rw [Finset.sum_congr rfl fun x hx => h_nonzero_term _ _ <| by simpa using hx] ; aesop
-                  rw [Finset.card_eq_one.mpr] ; aesop
-                  use ((fun₀ | i => 1), (fun₀ | i => #s)) ; ext ; aesop
+                    · rw [MvPolynomial.coeff_X'] ;
+                      simp_all only [false_and, ↓reduceIte, mul_eq_zero]
+                      split
+                      next h =>
+                        subst h
+                        simp_all only [not_true_eq_false]
+                      next h =>
+                        simp_all only [zero_sub, neg_eq_zero, ite_eq_right_iff]
+                        contrapose! hx
+                        simp_all only [ne_eq]
+                        obtain ⟨left, right⟩ := hx
+                        obtain ⟨left, right_1⟩ := left
+                        subst left
+                        simp_all only [zero_add, single_eq_zero, one_ne_zero, not_false_eq_true]
+                        subst hxy
+                        -- The degree of the product of (X_i - C a) over s is #s, so any term with a higher degree than #s must have a coefficient of zero.
+                        have h_deg : (∏ a ∈ s, (MvPolynomial.X i - MvPolynomial.C a)).totalDegree ≤ #s := by
+                          have h_total_degree : ∀ (s : Finset (ZMod p)), (∏ a ∈ s, (MvPolynomial.X i - MvPolynomial.C a)).totalDegree ≤ s.card := by
+                            intro s; induction s using Finset.induction <;> aesop
+                            refine' le_trans (MvPolynomial.totalDegree_mul _ _) _
+                            refine' le_trans (add_le_add (MvPolynomial.totalDegree_sub _ _) a_3) _ ; norm_num [add_comm]
+                          exact h_total_degree s
+                        rw [MvPolynomial.coeff_eq_zero_of_totalDegree_lt] at right <;> aesop
+                        refine' lt_of_le_of_lt h_deg _
+                        rw [Finset.sum_eq_single i] <;> aesop
+                  rw [Finset.sum_congr rfl fun x hx => h_nonzero_term _ _ <| by simpa using hx]
+                  simp_all only [Finset.sum_boole]
+                  rw [Finset.card_eq_one.mpr]
+                  simp_all only [Nat.cast_one]
+                  use ((fun₀ | i => 1), (fun₀ | i => #s)) ; ext
+                  rename_i a_1
+                  simp_all only [Finset.mem_filter, Finset.mem_antidiagonal, Finset.mem_singleton]
+                  obtain ⟨fst, snd⟩ := a_1
+                  simp_all only [Prod.mk.injEq, and_iff_right_iff_imp, and_imp]
+                  intro a_1 a_2
+                  subst a_1 a_2
                   exact add_comm _ _
               exact h_leading_coeff _
-            rw [MvPolynomial.degreeOf_eq_sup] at * ; aesop
+            rw [MvPolynomial.degreeOf_eq_sup] at * ;
+            simp_all only [gt_iff_lt, Finset.card_pos, Nat.bot_eq_zero, Finset.sup_lt_iff,
+              MvPolynomial.mem_support_iff, coeff_sub, ne_eq]
+            intro b a
             by_cases hb : b i = #(A i)
             · simp_all +decide [MvPolynomial.coeff_X_pow]
               bound
-              · aesop
+              · simp_all only [single_eq_same, sub_self, not_true_eq_false]
               · contrapose! h; ext j; by_cases hj : j = i <;> aesop
                 have h_deg_sub : ∀ m ∈ (elimination_polynomials A i).support, m j = 0 := by
-                  unfold elimination_polynomials; aesop
+                  unfold elimination_polynomials
+                  intro m a_1
+                  simp_all only [MvPolynomial.mem_support_iff, ne_eq]
                   rw [Finset.prod_congr rfl fun x hx => sub_eq_add_neg _ _] at a_1
                   rw [Finset.prod_add] at a_1
                   rw [MvPolynomial.coeff_sum] at a_1
-                  obtain ⟨x, hx⟩ := Finset.exists_ne_zero_of_sum_ne_zero a_1 ; aesop
+                  obtain ⟨x, hx⟩ := Finset.exists_ne_zero_of_sum_ne_zero a_1
+                  simp_all only [Finset.prod_const, Finset.mem_powerset, ne_eq]
+                  obtain ⟨left, right⟩ := hx
                   rw [MvPolynomial.coeff_mul] at right
-                  obtain ⟨y, hy⟩ := Finset.exists_ne_zero_of_sum_ne_zero right ; aesop
-                  · rw [MvPolynomial.coeff_X_pow] at left_2 ; aesop
-                  · rw [Finset.prod_congr rfl fun _ _ => neg_eq_neg_one_mul _, Finset.prod_mul_distrib] at right_1 ; aesop
+                  obtain ⟨y, hy⟩ := Finset.exists_ne_zero_of_sum_ne_zero right
+                  simp_all only [Finset.mem_antidiagonal, ne_eq, mul_eq_zero, not_or]
+                  obtain ⟨fst, snd⟩ := y
+                  obtain ⟨left_1, right_1⟩ := hy
+                  obtain ⟨left_2, right_1⟩ := right_1
+                  subst left_1
+                  simp_all only [Finsupp.coe_add, Pi.add_apply, Nat.add_eq_zero_iff]
+                  apply And.intro
+                  · rw [MvPolynomial.coeff_X_pow] at left_2
+                    simp_all only [ite_eq_right_iff, one_ne_zero, imp_false, Decidable.not_not]
+                    subst left_2
+                    simp_all only [ne_eq, not_false_eq_true, single_eq_of_ne]
+                  · rw [Finset.prod_congr rfl fun _ _ => neg_eq_neg_one_mul _, Finset.prod_mul_distrib] at right_1
+                    simp_all only [Finset.prod_const]
                     -- Since the product is over elements of A i \ x, and each element is a constant, the only way for the product to have a non-zero coefficient is if snd is the zero function. Otherwise, there would be a term in the product that's a constant, which can't contribute to the coefficient of snd unless snd is zero.
                     have h_snd_zero : ∀ (c : ZMod p), MvPolynomial.coeff snd (MvPolynomial.C c) = if snd = 0 then c else 0 := by
-                      intro c; rw [MvPolynomial.coeff_C] ; aesop
-                    specialize h_snd_zero ((-1) ^ # (A i \ x) * ∏ x ∈ A i \ x, x) ; aesop
-                exact Eq.symm (h_deg_sub b (by aesop))
+                      intro c; rw [MvPolynomial.coeff_C]
+                      split
+                      next h =>
+                        subst h
+                        simp_all only [add_zero, ↓reduceIte]
+                      next h =>
+                        simp_all only [right_eq_ite_iff]
+                        intro a_2
+                        subst a_2
+                        simp_all only [add_zero, not_true_eq_false]
+                    specialize h_snd_zero ((-1) ^ # (A i \ x) * ∏ x ∈ A i \ x, x) ; simp_all
+                exact Eq.symm (h_deg_sub b (by simp_all only [MvPolynomial.mem_support_iff, ne_eq, not_false_eq_true]))
             · contrapose! a; simp_all +decide [MvPolynomial.coeff_X_pow]
-              rw [if_neg (by intro h; replace h := congr_arg (fun f => f i) h; aesop)] ; aesop
+              rw [if_neg (by intro h; replace h := congr_arg (fun f => f i) h; aesop)]
+              simp_all only [sub_zero]
               exact Classical.not_not.1 fun h => hb <| le_antisymm (h_deg ▸ Finset.le_sup (f := fun m => m i) (MvPolynomial.mem_support_iff.2 h)) a
           have h_total_deg : ∀ j ≠ i, (elimination_polynomials A i - (MvPolynomial.X i) ^ #(A i)).degreeOf j ≤ 0 := by
             intros j hj_ne_i
@@ -645,17 +733,39 @@ lemma elimination_polynomial_properties (A : Fin (k + 1) → Finset (ZMod p)) (i
               · norm_num [MvPolynomial.degreeOf]
               · -- Since $j \neq i$, the degree of $X_i - C a$ in $j$ is zero.
                 have h_deg_j_zero : MvPolynomial.degreeOf j (MvPolynomial.X i - MvPolynomial.C a) = 0 := by
-                  simp +decide [MvPolynomial.degreeOf_eq_sup, hj_ne_i]
-                  intro m hm; rw [MvPolynomial.coeff_X'] at hm; aesop
-                exact le_antisymm (le_trans (MvPolynomial.degreeOf_mul_le _ _ _) (by aesop)) (Nat.zero_le _)
+                  simp +decide [MvPolynomial.degreeOf_eq_sup]
+                  intro m hm; rw [MvPolynomial.coeff_X'] at hm
+                  split at hm
+                  next h =>
+                    split at hm
+                    next h_1 =>
+                      subst h
+                      simp_all only [ne_eq, not_false_eq_true, single_eq_of_ne]
+                    next h_1 =>
+                      subst h
+                      simp_all only [sub_zero, one_ne_zero, not_false_eq_true, ne_eq, single_eq_of_ne]
+                  next h =>
+                    split at hm
+                    next h_1 =>
+                      subst h_1
+                      simp_all only [zero_sub, neg_eq_zero, single_eq_zero, one_ne_zero, not_false_eq_true,
+                        Finsupp.coe_zero, Pi.zero_apply]
+                    next h_1 => simp_all only [sub_self, not_true_eq_false]
+                exact le_antisymm (le_trans (MvPolynomial.degreeOf_mul_le _ _ _) (by simp_all only [add_zero, le_refl])) (Nat.zero_le _)
             simp_all +decide [MvPolynomial.degreeOf_eq_sup]
-            intro m hm; specialize h_deg_j m; rw [MvPolynomial.coeff_X_pow] at hm; aesop
+            intro m hm; specialize h_deg_j m; rw [MvPolynomial.coeff_X_pow] at hm
+            split at hm
+            next h =>
+              subst h
+              simp_all only [ne_eq, not_false_eq_true, single_eq_of_ne, implies_true]
+            next h => simp_all only [sub_zero, not_false_eq_true]
           rw [MvPolynomial.totalDegree]
           simp_all +decide [MvPolynomial.degreeOf_eq_sup]
           intro b hb; specialize h_deg_mono b hb; specialize h_total_deg; simp_all +decide [Finsupp.sum_fintype]
           rw [Finset.sum_eq_single i] <;> aesop
         exact h_deg_sub
 
+/-- A single step in the monomial reduction process, reducing the degree in variable `i`. -/
 lemma monomial_reduction_step (m : Fin (k + 1) →₀ ℕ) (i : Fin (k + 1))
     (A : Fin (k + 1) → Finset (ZMod p))
     (c : Fin (k + 1) → ℕ)
@@ -672,7 +782,8 @@ lemma monomial_reduction_step (m : Fin (k + 1) →₀ ℕ) (i : Fin (k + 1))
           have hQ_totalDegree : Q.totalDegree < m.sum (fun _ n => n) := by
             have hQ_totalDegree : (MvPolynomial.X i ^ (c i + 1) - elimination_polynomials A i).totalDegree < c i + 1 := by
               have := elimination_polynomial_properties A i
-              rw [← neg_sub, MvPolynomial.totalDegree_neg] ; aesop
+              rw [← neg_sub, MvPolynomial.totalDegree_neg]
+              simp_all
             have hQ_totalDegree : Q.totalDegree ≤ (m - Finsupp.single i (c i + 1)).sum (fun x n => n) + (MvPolynomial.X i ^ (c i + 1) - elimination_polynomials A i).totalDegree := by
               convert MvPolynomial.totalDegree_mul _ _ using 1
               norm_num [MvPolynomial.totalDegree_monomial]
@@ -689,12 +800,18 @@ lemma monomial_reduction_step (m : Fin (k + 1) →₀ ℕ) (i : Fin (k + 1))
             rw [h_gi_zero x a, sub_zero] ; simp +decide [MvPolynomial.eval_monomial] ; ring_nf
             simp +decide [Finsupp.single_apply, Finset.prod_eq_prod_diff_singleton_mul (Finset.mem_univ i), mul_assoc, ← pow_succ']
             rw [← pow_add, Nat.sub_add_cancel (by linarith)]
-            exact congrArg₂ _ (Finset.prod_congr rfl fun j hj => by aesop) rfl
+            exact congrArg₂ _ (Finset.prod_congr rfl fun j hj => by
+            simp_all only [Finset.mem_sdiff, Finset.mem_univ, Finset.mem_singleton, true_and]
+            split
+            next h =>
+              subst h
+              simp_all only [not_true_eq_false]
+            next h => simp_all only [add_zero, tsub_zero]) rfl
           · rw [MvPolynomial.coeff_eq_zero_of_totalDegree_lt]
-            aesop
+            simp_all
             exact lt_of_lt_of_le hQ_totalDegree (le_trans a (by rw [Finset.sum_filter_of_ne] ; aesop))
 
-set_option maxHeartbeats 2000000 in
+/-- Existence of a remainder polynomial R with bounded degrees matching Q on specified points. -/
 lemma exists_remainder (Q : MvPolynomial (Fin (k + 1)) (ZMod p))
     (A : Fin (k + 1) → Finset (ZMod p))
     (c : Fin (k + 1) → ℕ)
@@ -726,7 +843,10 @@ lemma exists_remainder (Q : MvPolynomial (Fin (k + 1)) (ZMod p))
               subst hQ_deg
               simp_all
             · use MvPolynomial.monomial m 1
-              simp_all (config := { decide := Bool.true }) [MvPolynomial.degreeOf_eq_sup]
+              simp_all (config := {decide := Bool.true}) only [degreeOf_eq_sup, Finset.sup_le_iff,
+                MvPolynomial.mem_support_iff, ne_eq, not_exists, not_and, imp_false, gt_iff_lt,
+                not_lt, coeff_monomial, ite_eq_right_iff, one_ne_zero, Decidable.not_not,
+                forall_eq', implies_true, and_self]
           · refine' False.elim (hm_deg <| le_trans _ ‹Q.totalDegree ≤ ∑ i, c i›)
             exact Finset.le_sup (f := fun m => m.sum fun _ n => n) hm
         choose! R hR₁ hR₂ hR₃ using h_induction
@@ -734,15 +854,20 @@ lemma exists_remainder (Q : MvPolynomial (Fin (k + 1)) (ZMod p))
         · intro i
           refine' le_trans (MvPolynomial.degreeOf_sum_le _ _ _) _
           simp +zetaDelta at *
-          intro m hm; specialize hR₁ m hm i; rw [MvPolynomial.degreeOf_eq_sup] at *; aesop
-        · simp +decide [MvPolynomial.eval_sum, hR₂]
+          intro m hm; specialize hR₁ m hm i; rw [MvPolynomial.degreeOf_eq_sup] at *;
+          simp_all only [Finset.sup_le_iff, MvPolynomial.mem_support_iff, ne_eq, not_false_eq_true,
+            MvPolynomial.support_smul_eq, implies_true]
+        · simp only [map_sum, smul_eval]
           intro x hx; rw [MvPolynomial.eval_eq']
-          exact Finset.sum_congr rfl fun m hm => by rw [hR₂ m hm x hx] ; simp +decide [MvPolynomial.eval_monomial]
+          exact Finset.sum_congr rfl fun m hm => by rw [hR₂ m hm x hx] ; simp only [eval_monomial,
+            prod_pow, one_mul]
         · rw [MvPolynomial.coeff_sum]
           rw [Finset.sum_congr rfl fun m hm => by rw [MvPolynomial.coeff_smul, hR₃ m hm]]
-          simp +decide [MvPolynomial.coeff_monomial]
+          simp only [coeff_monomial, smul_eq_mul, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq',
+            MvPolynomial.mem_support_iff, ne_eq, ite_not, ite_eq_right_iff]
           exact fun h => h.symm
 
+/-- If a polynomial Q vanishes on a grid defined by sets A_i and has total degree at most the sum of the sizes of these sets minus one, then the coefficient of the monomial defined by these sizes is zero. -/
 lemma coeff_target_eq_zero_of_vanishes_on_grid
     (Q : MvPolynomial (Fin (k + 1)) (ZMod p))
     (A : Fin (k + 1) → Finset (ZMod p))
@@ -761,6 +886,7 @@ lemma coeff_target_eq_zero_of_vanishes_on_grid
         exact hR_zero R (fun i => by linarith [hR.1 i, hA i]) fun x hx => by simp [hR.2.1 x hx, hQ_vanishes x hx]
       aesop
 
+/-- If two polynomials P and Q are equal or their difference has a total degree less than m, then the coefficients of the monomial defined by c in h * P and h * Q are equal, given that h.totalDegree + m equals the sum of c_i. -/
 lemma coeff_mul_eq_of_degree_bound
     (h P Q : MvPolynomial (Fin (k + 1)) (ZMod p))
     (c : Fin (k + 1) → ℕ)
@@ -783,6 +909,7 @@ lemma coeff_mul_eq_of_degree_bound
       simp_all +decide [mul_sub]
       exact eq_of_sub_eq_zero h_coeff_zero
 
+/-- The total degree of the difference between the product of linear terms and the corresponding power of the sum polynomial is less than the size of the multiset. -/
 lemma degree_product_minus_pow_lt {p : ℕ} [Fact (Nat.Prime p)] {k : ℕ} (E : Multiset (ZMod p)) (hE : E.card > 0) :
     ((E.map (fun e => (sumX_polynomial : MvPolynomial (Fin (k + 1)) (ZMod p)) - C e)).prod - (sumX_polynomial : MvPolynomial (Fin (k + 1)) (ZMod p)) ^ E.card).totalDegree < E.card := by
       -- Since every monomial of degree $|E|$ in $P$ has the same coefficient as in $Q$, the difference $P - Q$ has no terms of degree $|E|$.
@@ -895,8 +1022,7 @@ theorem ANR_polynomial_method (h : MvPolynomial (Fin (k + 1)) (ZMod p))
     have hQ_coeff : MvPolynomial.coeff (Finsupp.equivFunOnFinite.symm c) Q ≠ 0 := by
       rw [hQ_def]
       apply construction_polynomial_coeff_target_generalized h c m hm h_coeff E hE_card
-      ·
-        -- The product of (sumX - e) over E is equal to (sumX)^m plus a polynomial of degree less than m.
+      · -- The product of (sumX - e) over E is equal to (sumX)^m plus a polynomial of degree less than m.
         have h_prod_eq : (E.map (fun e => (∑ i : Fin (k + 1), MvPolynomial.X i) - MvPolynomial.C e)).prod = (∑ i : Fin (k + 1), MvPolynomial.X i) ^ m + (E.map (fun e => (∑ i : Fin (k + 1), MvPolynomial.X i) - MvPolynomial.C e)).prod - (∑ i : Fin (k + 1), MvPolynomial.X i) ^ m := by
           ring
         -- The degree of the difference between the product and (sumX)^m is less than m.
@@ -921,8 +1047,7 @@ theorem ANR_polynomial_method (h : MvPolynomial (Fin (k + 1)) (ZMod p))
             exact h_coeff_zero _ (h_diff_deg h_diff_zero h_diff_zero)
           simp +zetaDelta at *
           exact eq_of_sub_eq_zero h_coeff_eq
-      ·
-        intro d hd_ne_zero
+      · intro d hd_ne_zero
         by_contra h_contra
         -- Apply the lemma `coeff_target_eq_zero_of_vanishes_on_grid` to $Q$.
         have h_coeff_zero : MvPolynomial.coeff (Finsupp.equivFunOnFinite.symm c) Q = 0 := by
@@ -936,7 +1061,8 @@ theorem ANR_polynomial_method (h : MvPolynomial (Fin (k + 1)) (ZMod p))
           · linarith
           · norm_num +zetaDelta at *
             by_cases hm : m = 0
-            · aesop
+            · subst hm
+              simp_all
             · -- Apply the lemma `degree_product_minus_pow_lt` with the hypothesis `hm` (which states that m is not zero).
               apply Or.inr; exact (by
               convert degree_product_minus_pow_lt _ _
@@ -944,8 +1070,7 @@ theorem ANR_polynomial_method (h : MvPolynomial (Fin (k + 1)) (ZMod p))
               · exact hE_card.symm
               · exact hE_card.symm ▸ Nat.pos_of_ne_zero hm)
         exact h_coeff (by simpa only [mul_comm] using h_coeff_mul_eq.symm.trans h_coeff_zero)
-      ·
-        -- By contradiction, assume the constant term of h is zero.
+      · -- By contradiction, assume the constant term of h is zero.
         by_contra h_const_zero
         -- If the constant term of h is zero, then the constant term of h * (∑ i, X i)^m is also zero.
         have h_const_zero_prod : MvPolynomial.coeff 0 (h * (∑ i, MvPolynomial.X i) ^ m) = 0 := by

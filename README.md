@@ -4,9 +4,18 @@ The author of this README.md is Nick Adfor.
 
 This is for the formalization of "The polynomial method and restricted sums of congruence classes.pdf". This article can be found here, or by searching its name on Google or Bing.
 
-The coders are Chinese. Do not worry if you see strange words in the comments. They are not gibberish.
+The coders are Chinese. Do not worry if you see strange words in the comments or the file names. They are not gibberish. "妈咪河移位.lean" is the most important: Alon-Nathanson-Ruzsa Polynomial Method (Theorem 2.1). "妈咪河" means "the Mother River" in China, which is the nickname of the Yellow River. "移位" means changing location. "妈咪河移位" thus means the Yellow River changes location (of its estuary). In Chinese history, the Yellow River really changes location of its estuary for many times, the same as the author's proof of Theorem 2.1. Also, the importance of Theorem 2.1 rank high in Alon-Nathanson-Ruzsa's article. So I name the file as "妈咪河移位.lean" to show the author's step-by-step hard work of the LEAN proof and the respect of Alon, Nathanson and Ruzsa.
 
-The coders accept using LLM, even rely on LLM. 
+As coder, there's more things you should do than a mathematical student. Mathematical student writes the article like poems: short, hard to understand and time-consuming. Coder must first make everything clear enough without rough word, and cut all the time-consuming things. You can `aesop?` and cut the `aesop`, you can `simp?` to get `simp only`, they will make Lean Infoview work faster. But till today, the author do not finish that in 妈咪河移位.lean. `set_option maxHeartbeats 2000000 in theorem` is the unfinished.
+
+Those who do not respect Lean Infoview will be punished. The author is one of them. To solve the problem, every coder must respect the God of every world, no matter the God of Lean Infoview, the God of Aristotle, the God of ChatGPT, the God of DeepSeek, the God of every nation:
+
+בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃
+بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
+
+To ask peace between every nation, between human and AI, between math and code.
+
+
 
 To try to check this work, you can follow the author's silly way, this is really a silly one, even suitable for mathematical stutents. For one following the author's steps, you can do these:
 
