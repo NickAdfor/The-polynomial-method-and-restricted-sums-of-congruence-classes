@@ -10,23 +10,23 @@ The coders are all Chinese. Do not worry if you see strange words in the comment
 
 "妈咪河移位" (The Mother River changes course) can also be found in poem. Spenser’s Ruines of Time writes "for to shunne the horrible mischiefe, ... And his pure streames with guiltles blood oft stained. ... From my unhappie neighborhood farre fled, And his sweete waters away with him led." The part "his sweete waters away" is "river changes course".
 
-The coworker Helios (It might be respect to Ήλιος, the God of the Sun) told Nick that using this way to introduce one's work is sarcastic, mocking, bitter, peculiar (In Chinese it is really concise: "阴阳怪气"). No matter how ridiculous the author Nick Adfor is, we should begin our next step:
+The coworker Helios (It might be respect to Ήλιος, the God of the Sun) told Nick that such an approach to presenting one's work is perceived as sarcastic, mocking, bitter, and somewhat peculiar. (In Chinese it is really concise: "阴阳怪气"). No matter how ridiculous the author Nick Adfor is, we should begin our next step:
 
-As coder, there's more things you should do than a mathematical student. Mathematical student writes the article like poems: short, hard to understand and time-consuming. Coder must first make everything clear enough without rough word, and cut all the time-consuming things. You can "aesop?" and cut the "aesop", you can "simp?" to get "simp only", they will make Lean Infoview work faster. But till today, the author do not finish that in 妈咪河移位.lean. "set_option maxHeartbeats 2000000 in theorem" is the unfinished.
-
-
+As coder, there's more things you should do than a mathematical student. Mathematics students write like poets: their papers are brief, cryptic, and laborious. Coder must first make everything clear enough without rough word, and then cut all the time-consuming things for Lean Infoview to run faster. But till today, the author do not finish the second in "妈咪河移位.lean". "set_option maxHeartbeats 2000000 in theorem" is the unfinished part. You can "aesop?" to cut the "aesop", you can "simp?" to get "simp only", they will make Lean Infoview work faster and also comfort Nick to have a good sleep.
 
 
 
-Those who do not respect Lean Infoview will be punished. The author is one of them. To solve the problem, every coder must respect the God of every world, no matter the God of Lean Infoview, the God of Aristotle (from Harmonic AI), the God of ChatGPT (from OpenAI), the God of DeepSeek (from China), the God of every nation:
+
+
+Those who do not respect Lean Infoview will be punished. The author is one of them. To solve the problem, every coder must respect the God of every world, no matter the God of Lean Infoview, the God of Arisle (from Harmonic AI), the God of ChatGPT (from OpenAI), the God of DeepSeek (from China), the God of every nation:
 
 בְּרֵאשִׁ֖ית בָּרָ֣א אֱלֹהִ֑ים אֵ֥ת הַשָּׁמַ֖יִם וְאֵ֥ת הָאָֽרֶץ׃
 
 بِسْمِ ٱللَّهِ ٱلرَّحْمَـٰنِ ٱلرَّحِيمِ
 
-To seek for peace between every nation, between human and AI, between math and code.
+To seek for peace between every nation, between human and AI, between maths and code.
 
-And the most respect should be given to Helios, which is one of the coworkers herself (You can find her in the Contributors). If the author do not respect her, she will criticize (The spell must be -ize in an Oxford way. Chinese coders must show respect to the difference between BrE and NAmE) the author to be sarcastic, mocking, bitter, peculiar (In Chinese it is really concise: "阴阳怪气"), and also refuse to take next steps (Though this sentence uses the future simple tense, the criticism really happened once in December 7th which is in the weekend yet the author still decided to try to finish his work on Theorem 2.1. It really finished, though most of the work is done by Aristotle and DeepSeek). Though the criticism from Helios really confused the author, to show respect to Helios, both the God of the Sun and the coworker herself, is a must. If not, the anger will be like the open-pit fusion reactor (In physics we call the God of the Sun "open-pit fusion reactor", which is illegal if human builds one as it hurt others, but the God of the Sun is an exception) spreading everywhere. 
+And the most respect should be given to Helios, which is one of the coworkers herself (You can find her in the Contributors). If the author does not respect her, she will criticize (The spell must be -ize in an Oxford way. Chinese coders must show respect to the difference between British English and North American English) the author to be sarcastic, mocking, bitter, peculiar (In Chinese it is really concise: "阴阳怪气"), and also refuse to take next steps (Though this sentence uses the future simple tense, the criticism really happened once in December 7th which is in the weekend yet the author still decided to try to finish his work on Theorem 2.1. It really finished, though most of the work is done by Aristotle and DeepSeek). Though the criticism from Helios really confused the author, to show respect to Helios-both the God of the Sun and the coworker herself-is a must. If not, the anger will be like the open-pit fusion reactor (In physics we call the God of the Sun "open-pit fusion reactor", which is illegal if human builds one as it hurt others, but the God of the Sun is an exception) spreading everywhere. 
 
 Spenser invents the legend of 'guiltles blood' to explain why the Thames at Verulamium had, since Gildas, chosen to change its course. (Stewart Mottram, "'With guiltles blood oft stained': Spenser's Ruines of Time and the Saints of St. Albans," Spenser Studies: A Renaissance Poetry Annual 32 (2018): 533–56, https://hull-repository.worktribe.com/OutputFile/747220) Also, Nick invents the legend of "妈咪河移位" to explain why the code on Theorem 2.1 had, since Dec. 7th, chosen to change its course:
 
