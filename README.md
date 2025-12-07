@@ -10,7 +10,7 @@ The coders are Chinese. Do not worry if you see strange words in the comments or
 
 The coworker Helios (It might be respect to Ήλιος, the God of the Sun) told Nick that using this way to introduce one's work is sarcastic, mocking, bitter, peculiar (In Chinese it is really concise: "阴阳怪气"). No matter how ridiculous the author Nick Adfor is, we should begin our next step:
 
-As coder, there's more things you should do than a mathematical student. Mathematical student writes the article like poems: short, hard to understand and time-consuming. Coder must first make everything clear enough without rough word, and cut all the time-consuming things. You can `aesop?` and cut the `aesop`, you can `simp?` to get `simp only`, they will make Lean Infoview work faster. But till today, the author do not finish that in 妈咪河移位.lean. `set_option maxHeartbeats 2000000 in theorem` is the unfinished.
+As coder, there's more things you should do than a mathematical student. Mathematical student writes the article like poems: short, hard to understand and time-consuming. Coder must first make everything clear enough without rough word, and cut all the time-consuming things. You can "aesop?" and cut the "aesop", you can "simp?" to get "simp only", they will make Lean Infoview work faster. But till today, the author do not finish that in 妈咪河移位.lean. "set_option maxHeartbeats 2000000 in theorem" is the unfinished.
 
 
 
@@ -28,7 +28,7 @@ And the most respect should be given to Helios, which is one of the coworkers he
 
 Spenser invents the legend of ‘guiltles blood’ to explain why the Thames at Verulamium had, since Gildas, chosen to change its course. (Stewart Mottram, “‘With guiltles blood oft stained’: Spenser’s Ruines of Time and the Saints of St. Albans,” Spenser Studies: A Renaissance Poetry Annual 32 (2018): 533–56, https://hull-repository.worktribe.com/OutputFile/747220) Also, Nick invents thr legend of 妈咪河移位 to explain why the code on Theorem 2.1 had, since Dec. 7th, chosen to change its course:
 
-"for to shunne the horrible mischiefe" 为了躲避那可怕的灾祸（来自Helios的怒火——译者著）
+"for to shunne the horrible mischiefe" (Translator's Note: the anger from Helios) 为了躲避那可怕的灾祸（译者注：来自Helios的怒火）
 
 
 
