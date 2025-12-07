@@ -4,6 +4,8 @@ The author of this README.md is Nick Adfor.
 
 This is for the formalization of "The polynomial method and restricted sums of congruence classes.pdf". This article can be found here, or by searching its name on Google or Bing.
 
+# About Theorem 2.1 and the Legend
+
 The coders are all Chinese. Do not worry if you see strange words in the comments or the file names. They are not gibberish. "妈咪河移位.lean" is the most important: Alon-Nathanson-Ruzsa Polynomial Method (Theorem 2.1). "妈咪河" means "the Mother River" in China, which is the nickname of the Yellow River. "移位" means changing location. "妈咪河移位" thus means the Yellow River changes location (of its estuary). In Chinese history, the Yellow River really changes location of its estuary for many times, the same as the author's proof of Theorem 2.1. Also, the importance of Theorem 2.1 rank high in Alon-Nathanson-Ruzsa's article. So I name the file as "妈咪河移位.lean" to show the author's step-by-step hard work of the LEAN proof and the respect of Alon, Nathanson and Ruzsa.
 
 "妈咪河移位" (The Mother River changes course) can also be found in poem. Spenser’s Ruines of Time writes "for to shunne the horrible mischiefe, ... And his pure streames with guiltles blood oft stained. ... From my unhappie neighborhood farre fled, And his sweete waters away with him led." The part "his sweete waters away" is "river changes course".
@@ -26,17 +28,15 @@ To seek for peace between every nation, between human and AI, between math and c
 
 And the most respect should be given to Helios, which is one of the coworkers herself (You can find her in the Contributors). If the author do not respect her, she will criticize (The spell must be -ize in an Oxford way. Chinese coders must show respect to the difference between BrE and NAmE) the author to be sarcastic, mocking, bitter, peculiar (In Chinese it is really concise: "阴阳怪气"), and also refuse to take next steps (Though this sentence uses the future simple tense, the criticism really happened once in December 7th which is in the weekend yet the author still decided to try to finish his work on Theorem 2.1. It really finished, though most of the work is done by Aristotle and DeepSeek). Though the criticism from Helios really confused the author, to show respect to Helios, both the God of the Sun and the coworker herself, is a must. If not, the anger will be like the open-pit fusion reactor (In physics we call the God of the Sun "open-pit fusion reactor", which is illegal if human builds one as it hurt others, but the God of the Sun is an exception) spreading everywhere. 
 
-Spenser invents the legend of 'guiltles blood' to explain why the Thames at Verulamium had, since Gildas, chosen to change its course. (Stewart Mottram, "'With guiltles blood oft stained': Spenser's Ruines of Time and the Saints of St. Albans," Spenser Studies: A Renaissance Poetry Annual 32 (2018): 533–56, https://hull-repository.worktribe.com/OutputFile/747220) Also, Nick invents the legend of 妈咪河移位 to explain why the code on Theorem 2.1 had, since Dec. 7th, chosen to change its course:
+Spenser invents the legend of 'guiltles blood' to explain why the Thames at Verulamium had, since Gildas, chosen to change its course. (Stewart Mottram, "'With guiltles blood oft stained': Spenser's Ruines of Time and the Saints of St. Albans," Spenser Studies: A Renaissance Poetry Annual 32 (2018): 533–56, https://hull-repository.worktribe.com/OutputFile/747220) Also, Nick invents the legend of "妈咪河移位" to explain why the code on Theorem 2.1 had, since Dec. 7th, chosen to change its course:
 
 "for to shunne the horrible mischiefe" (Translator's Note: the anger from Helios) 为了躲避那可怕的灾祸（译者注：来自Helios的怒火）
 
 
 
-
+### Step
 
 To try to check this work, you can follow the author's silly way, this is really a silly one, even suitable for mathematical stutents. For one following the author's steps, you can do these:
-
-### Step
 
 First, open a new folder. I name it as "ThePolynomialMethod". For the author, this file, after taking the following steps, cost 15.3 GB.
 
