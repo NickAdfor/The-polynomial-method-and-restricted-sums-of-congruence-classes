@@ -8,7 +8,13 @@ This is for the formalization of "The polynomial method and restricted sums of c
 
 The coders are all Chinese. Do not worry if you see strange words in the comments or the file names. They are not gibberish. "妈咪河移位.lean" is the most important: Alon-Nathanson-Ruzsa Polynomial Method (Theorem 2.1). "妈咪河" means "the Mother River" in China, which is the nickname of the Yellow River. "移位" means changing location. "妈咪河移位" thus means the Yellow River changes location (of its estuary). In Chinese history, the Yellow River really changes location of its estuary for many times, the same as the author's proof of Theorem 2.1. Also, the importance of Theorem 2.1 rank high in Alon-Nathanson-Ruzsa's article. So I name the file as "妈咪河移位.lean" to show the author's step-by-step hard work of the LEAN proof and the respect of Alon, Nathanson and Ruzsa.
 
-"妈咪河移位" (The Mother River changes course) can also be found in poem. Spenser’s Ruines of Time writes "for to shunne the horrible mischiefe, ... And his pure streames with guiltles blood oft stained. ... From my unhappie neighborhood farre fled, And his sweete waters away with him led." The part "his sweete waters away" is "river changes course".
+"妈咪河移位" (The Mother River changes course) can also be found in British poem. Spenser’s Ruines of Time writes:
+
+"for to shunne the horrible mischiefe, 
+With which he saw my cruell foes me pained, 
+And his pure streames with guiltles blood oft stained" 
+
+The part "for to shunne the horrible mischiefe" is the reason of "river changes course".
 
 The coworker Helios (It might be respect to Ήλιος, the God of the Sun) told Nick that such an approach to presenting one's work is perceived as sarcastic, mocking, bitter, and somewhat peculiar. (In Chinese it is really concise: "阴阳怪气"). No matter how ridiculous the author Nick Adfor is, we should begin our next step:
 
